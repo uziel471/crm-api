@@ -5,7 +5,7 @@ import { WorkflowConfigController } from '@modules/workflow-config/workflow-conf
 import {
   WorkflowConfig,
   WorkflowConfigSchema,
-} from './schemas/workflow-config.schema';
+} from '@modules/workflow-config/schemas/workflow-config.schema';
 
 @Module({
   imports: [

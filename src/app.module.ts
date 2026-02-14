@@ -11,6 +11,7 @@ import { MongoDBModule } from '@database/mongodb.module';
 import configuration from '@config/configuration';
 import { validationSchema } from '@config/validation';
 import { WorkflowModule } from '@modules/workflow-config/workflow-config.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { WorkflowModule } from '@modules/workflow-config/workflow-config.module'
     UsersModule,
     MongoDBModule,
     WorkflowModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [
