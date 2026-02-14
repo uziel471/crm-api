@@ -10,6 +10,7 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { MongoDBModule } from '@database/mongodb.module';
 import configuration from '@config/configuration';
 import { validationSchema } from '@config/validation';
+import { WorkflowModule } from '@modules/workflow-config/workflow-config.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { validationSchema } from '@config/validation';
     AuthModule,
     UsersModule,
     MongoDBModule,
+    WorkflowModule,
   ],
   controllers: [AppController],
   providers: [
