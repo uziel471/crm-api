@@ -12,6 +12,7 @@ import configuration from '@config/configuration';
 import { validationSchema } from '@config/validation';
 import { WorkflowModule } from '@modules/workflow-config/workflow-config.module';
 import { ProductsModule } from './modules/products/products.module';
+import { CampaignsModule } from './modules/campaigns/campaigns.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ProductsModule } from './modules/products/products.module';
     MongoDBModule,
     WorkflowModule,
     ProductsModule,
+    CampaignsModule,
   ],
   controllers: [AppController],
   providers: [
