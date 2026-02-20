@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+
 import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
@@ -15,7 +16,12 @@ async function bootstrap() {
       max: 300,
     }),
   );
-
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    exposedHeaders: ['Content-Disposition'],
+  });
   const config = new DocumentBuilder()
     .setTitle('CRM API')
     .setDescription('CRM Backend API')
