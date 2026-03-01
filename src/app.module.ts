@@ -13,6 +13,7 @@ import { validationSchema } from '@config/validation';
 import { WorkflowModule } from '@modules/workflow-config/workflow-config.module';
 import { ProductsModule } from './modules/products/products.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { LeadsModule } from './modules/leads/leads.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CampaignsModule } from './modules/campaigns/campaigns.module';
     WorkflowModule,
     ProductsModule,
     CampaignsModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [

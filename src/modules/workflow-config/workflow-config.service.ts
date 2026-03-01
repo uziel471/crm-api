@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -10,6 +10,7 @@ import { CreateStageDto } from '@modules/workflow-config/dto/create-stage.dto';
 import { CreateFieldDto } from '@modules/workflow-config/dto/create-field.dto';
 import { ReorderStagesDto } from '@modules/workflow-config/dto/reorder-stages.dto';
 import { ReorderFieldsDto } from '@modules/workflow-config/dto/reorder-fields.dto';
+import { WorkflowStage } from '@modules/workflow-config/schemas/workflow-stage.schema';
 
 @Injectable()
 export class WorkflowConfigService {
@@ -123,5 +124,14 @@ export class WorkflowConfigService {
     }
 
     return this.findGlobal();
+  }
+
+  async findStages(): Promise<WorkflowStage[]> {
+    const workflow = await this.findGlobal();
+
+    if (!workflow) {
+      throw new NotFoundException('Workflow not found');
+    }
+    return workflow.stages;
   }
 }
