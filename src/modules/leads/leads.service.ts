@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Lead } from '@modules/leads/schemas/leads.schema';
@@ -6,6 +10,7 @@ import { CreateLeadDto } from './dto/create-lead.dto';
 import { WorkflowConfigService } from '@modules/workflow-config/workflow-config.service';
 import { GetLeadsQueryDto } from '@modules/leads/dto/list-lead.dto';
 import { User } from '@modules/users/user.schema';
+import { WorkflowStage } from '../workflow-config/schemas/workflow-stage.schema';
 
 @Injectable()
 export class LeadsService {
@@ -20,7 +25,6 @@ export class LeadsService {
   ) {}
 
   async create(dto: CreateLeadDto, user) {
-    console.log('dto', dto);
     const stages = await this.workflowService.findStages();
     const selectedStageIndex = stages.findIndex(
       ({ _id: stageId }) => stageId.toString() === dto.stageId,
@@ -76,7 +80,6 @@ export class LeadsService {
 
       match.createdAt = { $gte: start, $lte: end };
     }
-    console.log('match', match);
     const [leads, stages] = await Promise.all([
       this.model
         .find(match)
@@ -119,7 +122,95 @@ export class LeadsService {
         },
       });
     }
-
+    // sort by stage position
     return responses;
+  }
+
+  async moveLead(leadId: string, stageId: string, userId: string) {
+    const lead = await this.model.findById(leadId);
+
+    if (!lead) {
+      throw new NotFoundException('Lead not found');
+    }
+
+    if (lead.currentStage.toString() === stageId) {
+      return lead;
+    }
+
+    const stages = await this.workflowService.findStages();
+    const stage = stages.find((s) => s._id.toString() === stageId);
+
+    if (!stage) {
+      throw new NotFoundException('Stage not found');
+    }
+    // existen validaciones para mover el lead entre etapas??
+    const historyEntry = {
+      stageId: stage._id,
+      stageName: stage.name,
+      color: stage.color,
+      changedBy: userId,
+      changedAt: new Date(),
+    };
+
+    return this.model.findByIdAndUpdate(
+      leadId,
+      {
+        $set: {
+          currentStage: stage._id,
+          currentStageSnapshot: {
+            name: stage.name,
+            color: stage.color,
+            position: stage.position,
+          },
+          movedToStageAt: new Date(),
+        },
+        $push: {
+          history: historyEntry,
+        },
+      },
+      { new: true },
+    );
+  }
+
+  async moveByDirection(
+    opportunityId: string,
+    direction: 'forward' | 'backward' | 'abandon',
+    userId: string,
+  ) {
+    const lead = await this.model.findById(opportunityId);
+
+    if (!lead) {
+      throw new NotFoundException('Lead not found');
+    }
+
+    const stages = await this.workflowService.findStages();
+
+    if (!stages || stages.length === 0) {
+      throw new NotFoundException('Workflow not found');
+    }
+
+    const currentIndex = stages.findIndex(
+      (s) => s._id.toString() === lead.currentStage.toString(),
+    );
+
+    if (currentIndex === -1) {
+      throw new BadRequestException('Current stage not found in workflow');
+    }
+
+    let targetStage: WorkflowStage | undefined;
+
+    if (direction === 'forward') {
+      targetStage = stages[currentIndex + 1];
+    }
+
+    if (direction === 'backward') {
+      targetStage = stages[currentIndex - 1];
+    }
+
+    if (!targetStage) {
+      throw new BadRequestException(`Cannot move ${direction} from this stage`);
+    }
+
+    return this.moveLead(opportunityId, targetStage._id.toString(), userId);
   }
 }

@@ -132,6 +132,6 @@ export class WorkflowConfigService {
     if (!workflow) {
       throw new NotFoundException('Workflow not found');
     }
-    return workflow.stages;
+    return workflow.stages.sort((a, b) => a.position - b.position);
   }
 }

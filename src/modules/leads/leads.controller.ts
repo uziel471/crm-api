@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { LeadsService } from '@modules/leads/leads.service';
 import { CreateLeadDto } from '@modules/leads/dto/create-lead.dto';
 import { GetLeadsQueryDto } from '@modules/leads/dto/list-lead.dto';
+import { MoveOpportunityDto } from './dto/move-direction-lead.dto';
 
 @Controller('leads')
 export class LeadsController {
@@ -15,5 +25,23 @@ export class LeadsController {
   @Get()
   list(@Query() query: GetLeadsQueryDto) {
     return this.service.list(query);
+  }
+
+  @Patch(':id/move')
+  async moveLead(
+    @Param('id') id: string,
+    @Body('stageId') stageId: string,
+    @Req() req,
+  ) {
+    return this.service.moveLead(id, stageId, req.user._id);
+  }
+
+  @Patch('move-direction')
+  moveOpportunityDirection(@Body() dto: MoveOpportunityDto, @Req() req) {
+    return this.service.moveByDirection(
+      dto.opportunityId,
+      dto.direction,
+      req.user._id,
+    );
   }
 }
